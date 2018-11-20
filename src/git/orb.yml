@@ -1,0 +1,16 @@
+version: 2.1
+
+description: |
+  Provides various git commands
+
+commands:
+  checkout-with-submodules:
+    description: >
+      Checkout git repository with sub modules
+    steps:
+      - checkout
+      - run:
+          name: Update submodules
+          command: |
+            git submodule sync
+            git submodule update --init --recursive --jobs 8
