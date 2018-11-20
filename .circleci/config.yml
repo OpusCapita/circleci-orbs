@@ -23,9 +23,6 @@ workflows:
           requires:
             - build
             - lint
-          filters:
-            tags:
-              only: /.*/
 
       - build-release:
           requires:
