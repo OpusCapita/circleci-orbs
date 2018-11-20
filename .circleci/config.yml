@@ -21,30 +21,15 @@ workflows:
             - build
             - lint
 
-      # - trigger-downstream:
-      #     requires:
-      #       - dev-release
-      #     filters:
-      #       branches:
-      #         only: master
-      #     context: orb-publishing
-
-      # - hold:
-      #     type: approval
-      #     requires:
-      #       - trigger-downstream
-      #     filters:
-      #       branches:
-      #         only: master
-
-      # - dev-promote-patch:
-      #     requires:
-      #       - hold
-      #     filters:
-      #       branches:
-      #         only: master
-      #     context: orb-publishing
-
+      - build_release:
+          requires:
+            - build
+            - lint
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore: /.*/
 
 jobs:
   lint:
@@ -66,13 +51,43 @@ jobs:
     executor: cli
     steps:
       - checkout
-
       - circle-compare-url/reconstruct
-
       - run:
-          name: Publish dev releases of any modified orbs
+          name: Publish dev releases
           command: |
+            # save value stored in file to a local env var
+            CIRCLE_COMPARE_URL=$(cat CIRCLE_COMPARE_URL.txt)
+            COMMIT_RANGE=$(echo $CIRCLE_COMPARE_URL | sed 's:^.*/compare/::g')
+            echo "Commit range: $COMMIT_RANGE"
             for ORB in src/*/; do
               orbname=$(basename $ORB)
-              circleci orb publish ${ORB}orb.yml opuscapita/${orbname}@dev:${CIRCLE_BRANCH}-${CIRCLE_SHA1} --token $CIRCLECI_API_TOKEN
+              if [[ $(git diff $COMMIT_RANGE --name-status | grep "$orbname") ]]; then
+                (ls ${ORB}orb.yml && echo "orb.yml found, attempting to publish...") || echo "No orb.yml file was found - the next line is expected to fail."
+                circleci orb publish ${ORB}orb.yml opuscapita/${orbname}@dev:${CIRCLE_BRANCH}-${CIRCLE_SHA1} --token $CIRCLECI_API_TOKEN
+              else
+                echo "${orbname} not modified; no need to promote"
+              fi
+              echo "---------------------------"
+            done
+
+  build-release:
+    executor: cli
+    steps:
+      - checkout
+      - run:
+          name: Publish releases
+          command: |
+            set -euo pipefail
+
+            [[ "${CIRCLE_TAG}" =~ ^v(.*)$ ]]
+            version="${BASH_REMATCH[1]}"
+
+            if [ -z "$version" ]; then
+              echo "Wrong tag format! Received ${CIRCLE_TAG}, but expected v1.2.3"
+              exit 1
+            fi
+
+            for ORB in src/*/; do
+              orbname=$(basename $ORB)
+              circleci orb publish ${ORB}orb.yml opuscapita/${orbname}@${version} --token $CIRCLECI_API_TOKEN
             done
