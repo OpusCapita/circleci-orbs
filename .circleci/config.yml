@@ -13,13 +13,22 @@ workflows:
   version: 2
   build-and-release:
     jobs:
-      - lint
-      - build
+      - lint:
+          filters:
+            tags:
+              only: /.*/
+      - build:
+          filters:
+            tags:
+              only: /.*/
 
       - dev-release:
           requires:
             - build
             - lint
+          filters:
+            tags:
+              only: /.*/
 
       - build-release:
           requires:
@@ -27,7 +36,9 @@ workflows:
             - lint
           filters:
             tags:
-              only: /^v.*/
+              only: /.*/
+            branches:
+              ignore: /.*/
 
 jobs:
   lint:
