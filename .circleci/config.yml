@@ -74,5 +74,6 @@ jobs:
           command: |
             for ORB in src/*/; do
               orbname=$(basename $ORB)
+              echo "circleci orb publish ${ORB}orb.yml opuscapita/${orbname}@dev:${CIRCLE_BRANCH}-${CIRCLE_SHA1} --token XXX"
               circleci orb publish ${ORB}orb.yml opuscapita/${orbname}@dev:${CIRCLE_BRANCH}-${CIRCLE_SHA1} --token $CIRCLECI_API_TOKEN
             done
