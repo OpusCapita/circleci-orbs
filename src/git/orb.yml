@@ -1,7 +1,7 @@
 version: 2.1
 
 description: |
-  Provides various git commands
+  Provides various git commands.
 
 commands:
   checkout-with-submodules:

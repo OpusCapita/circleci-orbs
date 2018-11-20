@@ -1,6 +1,6 @@
 version: 2.1
 
-description: Simplify common tasks for deploying demo installations into Kubernetes cluster.
+description: Common tasks for deploying demo installations into Kubernetes cluster.
 
 jobs:
   deploy-demo:
