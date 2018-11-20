@@ -21,7 +21,7 @@ workflows:
             - build
             - lint
 
-      - build_release:
+      - build-release:
           requires:
             - build
             - lint
