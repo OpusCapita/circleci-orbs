@@ -28,8 +28,6 @@ workflows:
           filters:
             tags:
               only: /^v.*/
-            branches:
-              ignore: /.*/
 
 jobs:
   lint:
