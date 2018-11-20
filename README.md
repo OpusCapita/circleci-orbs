@@ -1,4 +1,4 @@
 # circleci-orbs
 Circle Ci Orbs
 
-namespace: OpusCapita
+namespace: opuscapita
