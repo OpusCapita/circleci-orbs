@@ -72,7 +72,6 @@ jobs:
       - run:
           name: Publish dev releases of any modified orbs
           command: |
-            circleci setup --token $CIRCLECI_API_TOKEN
             for ORB in src/*/; do
               orbname=$(basename $ORB)
               circleci orb publish ${ORB}orb.yml opuscapita/${orbname}@dev:${CIRCLE_BRANCH}-${CIRCLE_SHA1} --token $CIRCLECI_API_TOKEN
