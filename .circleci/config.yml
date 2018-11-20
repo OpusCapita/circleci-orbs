@@ -61,6 +61,7 @@ jobs:
             echo "Commit range: $COMMIT_RANGE"
             for ORB in src/*/; do
               orbname=$(basename $ORB)
+              echo "circleci orb publish ${ORB}orb.yml opuscapita/${orbname}@dev:${CIRCLE_BRANCH}-${CIRCLE_SHA1} --token XXX"
               if [[ $(git diff $COMMIT_RANGE --name-status | grep "$orbname") ]]; then
                 (ls ${ORB}orb.yml && echo "orb.yml found, attempting to publish...") || echo "No orb.yml file was found - the next line is expected to fail."
                 circleci orb publish ${ORB}orb.yml opuscapita/${orbname}@dev:${CIRCLE_BRANCH}-${CIRCLE_SHA1} --token $CIRCLECI_API_TOKEN
@@ -89,5 +90,6 @@ jobs:
 
             for ORB in src/*/; do
               orbname=$(basename $ORB)
+              echo "circleci orb publish ${ORB}orb.yml opuscapita/${orbname}@${version} --token XXX"
               circleci orb publish ${ORB}orb.yml opuscapita/${orbname}@${version} --token $CIRCLECI_API_TOKEN
             done

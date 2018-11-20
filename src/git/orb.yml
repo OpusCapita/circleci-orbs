@@ -6,7 +6,7 @@ description: |
 commands:
   checkout-with-submodules:
     description: >
-      Checkout git repository with sub modules
+      Checkout git repository with submodules
     steps:
       - checkout
       - run:
