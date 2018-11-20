@@ -72,67 +72,8 @@ jobs:
       - run:
           name: Publish dev releases of any modified orbs
           command: |
-            # save value stored in file to a local env var
-            CIRCLE_COMPARE_URL=$(cat CIRCLE_COMPARE_URL.txt)
-            COMMIT_RANGE=$(echo $CIRCLE_COMPARE_URL | sed 's:^.*/compare/::g')
-            echo "Commit range: $COMMIT_RANGE"
+            circleci setup --token $CIRCLECI_API_TOKEN
             for ORB in src/*/; do
               orbname=$(basename $ORB)
-              if [[ $(git diff $COMMIT_RANGE --name-status | grep "$orbname") ]]; then
-                (ls ${ORB}orb.yml && echo "orb.yml found, attempting to publish...") || echo "No orb.yml file was found - the next line is expected to fail."
-                circleci orb publish ${ORB}orb.yml opuscapita/${orbname}@dev:${CIRCLE_BRANCH}-${CIRCLE_SHA1} --token $CIRCLECI_API_TOKEN
-              else
-                echo "${orbname} not modified; no need to promote"
-              fi
-              echo "---------------------------"
+              circleci orb publish ${ORB}orb.yml opuscapita/${orbname}@dev:${CIRCLE_BRANCH}-${CIRCLE_SHA1} --token $CIRCLECI_API_TOKEN
             done
-  # trigger-downstream:
-  #   machine: true
-  #   steps:
-  #     - run: |
-  #         # We probably want to have a mapping of orbs that have changed to
-  #         # test projects triggered instead of just triggering everything all
-  #         # the time.
-  #         BASE="https://circleci.com/api/v1.1/project/github"
-  #         PROJECT="circleci/aws-code-deploy-orb-test/build"
-  #         curl -X POST $BASE/$PROJECT?circle-token=$CIRCLECI_API_TOKEN
-  #     - slack/notify:
-  #         message: "Orbs from commit ${CIRCLE_SHA1} on the ${CIRCLE_BRANCH} branch are ready for review/approval: https://circleci.com/workflow-run/${CIRCLE_WORKFLOW_ID}"
-  #         mentions: "${ROSE_SLACK_UUID},${EDDIE_SLACK_UUID}"
-
-  # dev-promote-patch:
-  #   executor: cli
-  #   steps:
-  #     - checkout
-
-  #     - slack/notify:
-  #         message: "Orb publishing was approved for any orbs modified in commit ${CIRCLE_SHA1} on the ${CIRCLE_BRANCH} branch: https://circleci.com/workflow-run/${CIRCLE_WORKFLOW_ID}"
-  #         mentions: "${ROSE_SLACK_UUID},${EDDIE_SLACK_UUID}"
-  #     - circle-compare-url/reconstruct
-
-  #     - run:
-  #         name: Publish any modified orbs
-  #         shell: /bin/bash -exo pipefail
-  #         command: |
-  #           # save value stored in file to a local env var
-  #           CIRCLE_COMPARE_URL=$(cat CIRCLE_COMPARE_URL.txt)
-  #           COMMIT_RANGE=$(echo $CIRCLE_COMPARE_URL | sed 's:^.*/compare/::g')
-  #           echo "Commit range: $COMMIT_RANGE"
-  #           for ORB in src/*/; do
-  #             orbname=$(basename $ORB)
-  #             if [[ $(git diff $COMMIT_RANGE --name-status | grep "$orbname") ]]; then
-  #               echo "promoting circleci/${orbname}@dev:${CIRCLE_BRANCH}-${CIRCLE_SHA1} as patch release"
-  #               circleci orb publish promote circleci/${orbname}@dev:${CIRCLE_BRANCH}-${CIRCLE_SHA1} patch --token $CIRCLECI_API_TOKEN
-  #             else
-  #               echo "${orbname} not modified; no need to promote"
-  #             fi
-  #           done
-      ## walk the tree in orb-releases.yml (the path to which could be fed as a parameter to the command)
-        ## For each, attempt to build the orb with the CLI, then if that's successful, register it.
-        ## would look something like: `circleci orb build $PATH-TO-SRC $ORB-NAMESPACE $ORB-NAME $PATH-TO-BUILT-ORB; circleci orb register $PATH-TO-BUILT-ORB $REVISION`
-        ## Perhaps better yet, the "built" orb has its revision baked in? So then we can look directly for a checksum in our data to match the built orb.
-        ## QUESTION: when registering a given "built" orb we can look at the checksum and see if it's different, then increment for them.
-          ## If we did that, how would we choose when it's a major, minor, or patch? If we do need to pass it manually, we would want to update the manifest
-          ## but, we could allow a request to register be idempotent, so you can send us the same again, and if the revision and checksum are the same as an existing orb it's a noop.
-          ## If you send an existing revision with a different checksum that's an error, with a message that revisions are immutable.
-          ## If you send a revision smaller than what's live, that an error
