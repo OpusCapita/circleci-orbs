@@ -80,6 +80,7 @@ jobs:
               orbname=$(basename $ORB)
               if [[ $(git diff $COMMIT_RANGE --name-status | grep "$orbname") ]]; then
                 (ls ${ORB}orb.yml && echo "orb.yml found, attempting to publish...") || echo "No orb.yml file was found - the next line is expected to fail."
+                echo "circleci orb publish ${ORB}orb.yml opuscapita/${orbname}@dev:${CIRCLE_BRANCH}-${CIRCLE_SHA1} --token XXX"
                 circleci orb publish ${ORB}orb.yml opuscapita/${orbname}@dev:${CIRCLE_BRANCH}-${CIRCLE_SHA1} --token $CIRCLECI_API_TOKEN
               else
                 echo "${orbname} not modified; no need to promote"
