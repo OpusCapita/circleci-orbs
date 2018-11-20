@@ -11,7 +11,7 @@ executors:
 
 workflows:
   version: 2
-  main:
+  build-and-release:
     jobs:
       - lint
       - build
