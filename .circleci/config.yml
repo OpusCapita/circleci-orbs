@@ -27,9 +27,7 @@ workflows:
             - lint
           filters:
             tags:
-              only: /.*/
-            branches:
-              ignore: /.*/
+              only: /^v.*/
 
 jobs:
   lint:
